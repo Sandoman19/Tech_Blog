@@ -1,4 +1,7 @@
-<!-- For each gallery, the gallery-details partial is used to render the gallery data -->
-{{#each galleries as |gallery|}}
-{{> gallery-details}}
-{{/each}}
+<ul class="post-list">
+  {{#each posts as |post|}}
+  <li>
+    {{> post-info post }}
+  </li>
+  {{/each}}
+</ul>

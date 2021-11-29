@@ -1,9 +1,10 @@
+// Dependencies
+// sequelize model, datatypes, and database connection
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection');
 
-class Post extends Model {
-
-}
+// the Post model extends the sequelize model 
+class Post extends Model {}
 
 Post.init(
   {
@@ -18,8 +19,13 @@ Post.init(
       allowNull: false,
     },  
     content: {
+      // set length to be a max of 3000 characters long
       type: DataTypes.STRING(3000),
       allowNull: false,
+      validate: {
+        // post must be at least one character long
+      len: [1]
+    }
     }, 
     user_id: {
       type: DataTypes.INTEGER,
