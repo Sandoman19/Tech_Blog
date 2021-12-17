@@ -1,37 +1,41 @@
+// Dependencies
+// Express.js connection
 const router = require('express').Router();
+// sequelize connection
 const sequelize = require('../config/connection');
+// User Model, Post Model, and Comment Model
 const { Post, User, Comment } = require('../models');
-const {withAuth, isLoggedIn} = require('../utils/auth');
+
 
 // Render the home page
 router.get('/', (req, res) => {
   Post.findAll({
-      // Query configuration
-      // From the Post table, include the post ID, URL, title, and the timestamp from post creation
-      attributes: [
-          'id',
-          'post_text',
-          'title',
-          'created_at',
-        ],
-      // Order the posts from most recent to least
-      order: [[ 'created_at', 'DESC']],
-      // From the User table, include the post creator's user name
-      // From the Comment table, include all comments
-      include: [
-          {
-              model: User,
-              attributes: ['username']
-          },
-          {
-              model: Comment,
-              attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-              include: {
-                  model: User,
-                  attributes: ['username']
-              }
-          }
-      ]
+    // Query configuration
+    // From the Post table, include the post ID, URL, title, and the timestamp from post creation
+    attributes: [
+      'id',
+      'content',
+      'title',
+      'created_at',
+    ],
+    // Order the posts from most recent to least
+    order: [[ 'created_at', 'DESC']],
+    // From the User table, include the post creator's user name
+    // From the Comment table, include all comments
+    include: [
+      {
+        model: User,
+        attributes: ['username']
+      },
+      {
+        model: Comment,
+        attributes: ['id', 'contenet', 'post_id', 'user_id', 'created_at'],
+        include: {
+          model: User,
+          attributes: ['username']
+        }
+      }
+    ]
   })
   // render the posts
   .then(dbPostData => {
@@ -71,7 +75,7 @@ router.get('/post/:id', (req, res) => {
       },
       {
           model: Comment,
-          attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+          attributes: ['id', 'content', 'post_id', 'user_id', 'created_at'],
           include: {
               model: User,
               attributes: ['username']
@@ -106,18 +110,56 @@ router.get('/login', (req, res) => {
     res.redirect('/');
     return;
   }
-
   res.render('login');
 });
 
 // Render the sign up page.  If the user is logged in, redirect to the home page.
 router.get('/signup', (req, res) => {
-if (req.session.loggedIn) {
-  res.redirect('/');
-  return;
-}
+  if (req.session.loggedIn) {
+    res.redirect('/');
+    return;
+  }
+  res.render('signup');
+});
 
-res.render('signup');
+// Render the posts comments
+router.get('/posts-comments', (req, res) => {
+  Post.findOne({
+    where: {
+      id: req.params.id
+    },
+    attributes: [
+      'id',
+      'content',
+      'title',
+      'created_at'
+    ],
+    include: [{
+      model: Comment,
+      attributes: ['id', 'content', 'post_id', 'user_id', 'created_at'],
+        include: {
+          model: User,
+          attributes: ['username']
+        }
+      },
+      {
+        model: User,
+        attributes: ['username']
+      }
+    ]
+  })
+  .then(dbPostData => {
+    if (!dbPostData) {
+      res.status(404).json({ message: 'No post found with this id' });
+      return;
+    }
+    const post = dbPostData.get({ plain: true })
+    res.render('posts-comments', { post, loggedIn: req.session.loggedIn });
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
+  });
 });
 
 module.exports = router;

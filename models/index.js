@@ -10,35 +10,32 @@ User.hasMany(Post, {
 });
 //Post-User relationship
 Post.belongsTo(User, {
-  foreignKey: 'user_id'
+  foreignKey: 'user_id',
+  onDelete: "cascade"
 });
 
 // Comment-User relationship
 Comment.belongsTo(User, {
   foreignKey: 'user_id',
-  onDelete: 'cascade',
-  hooks:true
+  onDelete: 'cascade'
 });
 
 // Comment-Post relationship
 Comment.belongsTo(Post, {
   foreignKey: 'post_id',
-  onDelete: 'cascade',
-  hooks: true
+  onDelete: 'cascade'
 });
 
 // User-Comment relationsihp
 User.hasMany(Comment, {
   foreignKey: 'user_id',
   onDelete: 'cascade',
-  hooks:true
 });
 
 // Post-Comment relationship
 Post.hasMany(Comment, {
   foreignKey: 'post_id',
   onDelete: 'cascade',
-  hooks:true
 })
 
 module.exports = { User, Post, Comment };

@@ -3,8 +3,6 @@
 const router = require('express').Router();
 // User, Post, Vote models
 const { User, Post, Comment } = require('../../models');
-// Authorization Helper
-const withAuth = require('../../utils/auth');
 
 // GET /api/users -- get all users
 router.get('/', (req, res) => {
@@ -28,15 +26,19 @@ router.get('/:id', (req, res) => {
     include: [
       {
         model: Post,
-        attributes: ['id', 'title', 'content', 'created_at']
+        attributes: ['id', 'title', 'content', 'created_at'],
       },
       {
         model: Comment,
-        attributes: ['id', 'content', 'post_id', 'user_id', 'created_at'],
+        attributes: ['id', 'comment_text', 'created_at'],
         include: {
           model: Post,
           attributes: ['title']
         }
+      },
+      {
+        model: Post,
+        attributes: ['title'],
       }
     ]
   })
@@ -60,13 +62,13 @@ router.post('/', (req, res) => {
     username: req.body.username,
     password: req.body.password
   })
+
   .then(dbUserData => {
     req.session.save(() => {
-
       req.session.user_id = dbUserData.id;
       req.session.username = dbUserData.username;
       req.session.loggedIn = true;
-  
+
       res.json(dbUserData);
     });
   })
@@ -77,40 +79,37 @@ router.post('/', (req, res) => {
 });
 
 // POST /api/users/login -- login route for a user
-router.post('/login',  (req, res) => {
-
+router.post('/login', (req, res) => {
   User.findOne({
     where: {
       username: req.body.username
     }
   }).then(dbUserData => {
-
     if (!dbUserData) {
-      res.status(400).json({ message: 'No user with that email address!' });
-      return;
+    res.status(400).json({ message: 'No user with that username!' });
+    return;
     }
-
     const validPassword = dbUserData.checkPassword(req.body.password);
-
     if (!validPassword) {
-      res.status(400).json({ message: 'Incorrect password!' });
+    res.status(400).json({ message: 'Incorrect password!' });
       return;
     }
-
     req.session.save(() => {
-
       req.session.user_id = dbUserData.id;
       req.session.username = dbUserData.username;
       req.session.loggedIn = true;
 
       res.json({ user: dbUserData, message: 'You are now logged in!' });
-
     });
-  });  
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
+  });
 });
 
 // POST /api/users/logout -- log out an existing user
-router.post('/logout', withAuth, (req, res) => {
+router.post('/logout', (req, res) => {
   if (req.session.loggedIn) {
     req.session.destroy(() => {
       res.status(204).end();
@@ -118,10 +117,10 @@ router.post('/logout', withAuth, (req, res) => {
   } else {
     res.status(404).end();
   }
-})
+});
 
 // PUT /api/users/id -- update an existing user
-router.put('/:id', withAuth, (req, res) => {
+router.put('/:id', (req, res) => {
   User.update(req.body, {
     individualHooks: true,
     where: {
@@ -139,10 +138,11 @@ router.put('/:id', withAuth, (req, res) => {
     console.log(err);
     res.status(500).json(err);
   });
-})
+
+});
 
 // DELETE /api/users/id -- delete an existing user
-router.delete('/:id', withAuth, (req, res) => {
+router.delete('/:id', (req, res) => {
   User.destroy({
     where: {
       id: req.params.id

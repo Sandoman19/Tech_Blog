@@ -5,6 +5,8 @@ const router = require('express').Router();
 const { User, Post, Comment } = require('../../models');
 // Authorization Helper
 const withAuth = require('../../utils/auth');
+// sequelize connection
+const sequelize = require('../../config/connection');
 
 // GET api/posts/ -- get all posts
 router.get('/', (req, res) => {
@@ -88,14 +90,14 @@ router.post('/', withAuth, (req, res) => {
 
 // PUT api/posts/id-- update a post's title or text
 router.put('/:id', withAuth, (req, res) => {
-  Post.update(req.body,
-    {
-      where: {
-        id: req.params.id
-      }
+  Post.update({
+    title: req.body.title,
+    content: req.body.content
+  }, {
+    where: {
+      id: req.params.id
     }
-  )
-  .then(dbPostData => {
+  }).then(dbPostData => {
     if (!dbPostData) {
       res.status(404).json({ message: 'No post found with this id' });
       return;
@@ -104,7 +106,7 @@ router.put('/:id', withAuth, (req, res) => {
   })
   .catch(err => {
     console.log(err);
-    res.status(500).json(err)
+    res.status(500).json(err);
   });
 });
 
