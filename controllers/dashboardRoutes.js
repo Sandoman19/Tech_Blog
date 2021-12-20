@@ -8,7 +8,7 @@ const { Post, User, Comment } = require('../models');
 const withAuth = require('../utils/auth')
 
 // A route to render the dashboard page, only for a logged in user
-router.get('/', withAuth, (req, res) => {
+router.get('/', (req, res) => {
     // All of the users posts are obtained from the database
     Post.findAll({
       where: {
@@ -48,7 +48,7 @@ router.get('/', withAuth, (req, res) => {
   });
 
 // A route to edit a post
-router.get('/edit/:id', withAuth, (req, res) => {
+router.get('/edit/:id', (req, res) => {
   // All of the users posts are obtained from the database
   Post.findOne({
     where: {
@@ -92,7 +92,7 @@ router.get('/edit/:id', withAuth, (req, res) => {
 });
 
 // A route to edit the logged in user
-router.get('/edituser', withAuth, (req, res) => {
+router.get('/edituser', (req, res) => {
   // Acess the User model and run the findOne() method to get a single user based on parameters
   User.findOne({
     // when the data is sent back, exclude the password property

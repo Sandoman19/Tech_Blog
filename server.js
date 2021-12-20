@@ -15,9 +15,12 @@ const helpers = require("./utils/helpers");
 const hbs = exphbs.create({ helpers });
 // Sequelize connection to the database
 const sequelize = require("./config/connection");
+// Initialize the server
+const app = express();
+// Define the port for the server
+const PORT = process.env.PORT || 3001;
 // Sequelize store to save the session so the user can remain logged in
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
-
 // Initialize sessions
 const sess = {
   secret: 'Super secret secret',
@@ -29,15 +32,6 @@ const sess = {
   }),
 };
 
-// Initialize the server
-const app = express();
-// Define the port for the server
-const PORT = process.env.PORT || 3001;
-
-// Set handlebars as the template engine for the server
-app.engine("handlebars", hbs.engine);
-app.set("view engine", "handlebars");
-
 // Tell the app to use Express Session for the session handling
 app.use(session(sess));
 
@@ -47,6 +41,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Give the server a path to the public directory for static files
 app.use(express.static(path.join(__dirname, "public")));
+
+// Set handlebars as the template engine for the server
+app.engine("handlebars", hbs.engine);
+app.set("view engine", "handlebars");
 
 // Give the server the path to the routes
 app.use(routes);

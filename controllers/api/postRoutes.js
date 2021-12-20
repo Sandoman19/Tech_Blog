@@ -75,7 +75,7 @@ router.get('/:id', (req, res) => {
 });
 
 // POST api/posts -- create a new post
-router.post('/', withAuth, (req, res) => {
+router.post('/', (req, res) => {
   Post.create({
     title: req.body.title,
     content: req.body.content,
@@ -89,7 +89,7 @@ router.post('/', withAuth, (req, res) => {
 });
 
 // PUT api/posts/id-- update a post's title or text
-router.put('/:id', withAuth, (req, res) => {
+router.put('/:id', (req, res) => {
   Post.update({
     title: req.body.title,
     content: req.body.content
@@ -111,7 +111,7 @@ router.put('/:id', withAuth, (req, res) => {
 });
 
 // DELETE api/posts/id -- delete a post
-router.delete('/:id', withAuth, (req, res) => {
+router.delete('/:id', (req, res) => {
   Post.destroy({
     where: {
       id: req.params.id
