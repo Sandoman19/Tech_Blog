@@ -64,7 +64,7 @@ router.get('/post/:id', (req, res) => {
     // Query configuration, as with the get all posts route
     attributes: [
       'id',
-      'post_text',
+      'content',
       'title',
       'created_at',
     ],
