@@ -1,133 +1,58 @@
-// Dependencies
-// Express.js connection
 const router = require('express').Router();
-// User Model, Post Model, and Comment Model
-const { User, Post, Comment } = require('../../models');
-// Authorization Helper
+const { Post } = require('../../models');
 const withAuth = require('../../utils/auth');
-// sequelize connection
-const sequelize = require('../../config/connection');
 
-// GET api/posts/ -- get all posts
-router.get('/', (req, res) => {
-  Post.findAll({
-    attributes: [ 'id', 'content', 'title', 'created_at'],
-    order: [[ 'created_at', 'DESC']],
-    include: [
-      {
-        model: User,
-        attributes: ['username']
+// CREATE POST
+router.post('/', withAuth, async (req, res) => {
+  const body = req.body;
+    console.log(body);
+  try {
+    const newPost = await Post.create({ ...body, userId: req.session.userId });
+    console.log("Here is the new post: ",  newPost);
+    res.json(newPost);
+     } catch (err) {
+       console.log('IT FAILED!', err);
+    res.status(500).json(err);
+  }
+});
+
+// UPDATE POST
+router.put('/:id', withAuth, async (req, res) => {
+  try {
+    console.log('here is the req.body', req.body);
+    const [affectedRows] = await Post.update(req.body, {
+      where: {
+        id: req.params.id,
       },
-      {
-        model: Comment,
-        attributes: ['id', 'content', 'post_id', 'user_id', 'created_at'],
-        include: {
-          model: User,
-          attributes: ['username']
-        }
-      }
-    ]
-  })
-  // return the posts
-  .then(dbPostData => res.json(dbPostData))
-  // if there was a server error, return the error
-  .catch(err => {
-    console.log(err);
+    });
+
+    if (affectedRows > 0) {
+      res.status(200).end();
+    } else {
+      res.status(404).end();
+    }
+  } catch (err) {
     res.status(500).json(err);
-  });
+  }
 });
 
-// GET api/posts/:id -- get a single post by id
-router.get('/:id', (req, res) => {
-  Post.findOne({
-    where: {
-      id: req.params.id
-    },
-    attributes: [ 'id', 'content', 'title', 'created_at'],
-    include: [
-      {
-        model: User,
-        attributes: ['username']
+// DELETE POST
+router.delete('/:id', withAuth, async (req, res) => {
+  try {
+    const [affectedRows] = Post.destroy({
+      where: {
+        id: req.params.id,
       },
-      {
-        model: Comment,
-        attributes: ['id', 'content', 'post_id', 'user_id', 'created_at'],
-        include: {
-          model: User,
-          attributes: ['username']
-        }
-      }
-    ]
-  })
-  .then(dbPostData => {
-    // if no post by that id exists, return an error
-    if (!dbPostData) {
-      res.status(404).json({ message: 'No post found with this id' });
-      return;
-    }
-    res.json(dbPostData);
-  })
-  .catch(err => {
-    // if a server error occured, return an error
-    console.log(err);
-    res.status(500).json(err);
-  });
-});
+    });
 
-// POST api/posts -- create a new post
-router.post('/', (req, res) => {
-  Post.create({
-    title: req.body.title,
-    content: req.body.content,
-    user_id: req.session.user_id
-  })
-  .then(dbPostData => res.json(dbPostData))
-  .catch(err => {
-    console.log(err);
+    if (affectedRows > 0) {
+      res.status(200).end();
+    } else {
+      res.status(404).end();
+    }
+  } catch (err) {
     res.status(500).json(err);
-  });
-});
-
-// PUT api/posts/id-- update a post's title or text
-router.put('/:id', (req, res) => {
-  Post.update({
-    title: req.body.title,
-    content: req.body.content
-  }, {
-    where: {
-      id: req.params.id
-    }
-  }).then(dbPostData => {
-    if (!dbPostData) {
-      res.status(404).json({ message: 'No post found with this id' });
-      return;
-    }
-    res.json(dbPostData);
-  })
-  .catch(err => {
-    console.log(err);
-    res.status(500).json(err);
-  });
-});
-
-// DELETE api/posts/id -- delete a post
-router.delete('/:id', (req, res) => {
-  Post.destroy({
-    where: {
-      id: req.params.id
-    }
-  })
-  .then(dbPostData => {
-    if (!dbPostData) {
-      res.status(404).json({ message: 'No post found with this id' });
-      return;
-    }
-    res.json(dbPostData);
-  })
-  .catch(err => {
-    console.log(err);
-    res.status(500).json(err);
-  });
+  }
 });
 
 module.exports = router;

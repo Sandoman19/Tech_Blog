@@ -1,15 +1,11 @@
-// Dependencies
-// Server connection
 const router = require('express').Router();
-// User Routes
-const userRoutes = require('./userRoutes');
-// Post Routes
-const postRoutes = require('./postRoutes');
-// Comment Routes
-const commentRoutes = require('./commentRoutes');
 
-router.use('/users', userRoutes);
-router.use('/posts', postRoutes);
-router.use('/comments', commentRoutes);
+const userRoutes = require('./userroutes.js');
+const postRoutes = require('./postroutes.js');
+const commentRoutes = require('./commentroutes.js');
+
+router.use('/user', userRoutes);
+router.use('/post', postRoutes);
+router.use('/comment', commentRoutes);
 
 module.exports = router;
