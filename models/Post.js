@@ -17,15 +17,20 @@ Post.init(
     title: {
       type: DataTypes.STRING,
       allowNull: false,
-    },  
+    },
+    // date_created: {
+    //   type: DataTypes.DATE,
+    //   allowNull: false,
+    //   defaultValue: DataTypes.NOW,
+    // },  
     content: {
       // set length to be a max of 3000 characters long
       type: DataTypes.STRING(3000),
       allowNull: false,
       validate: {
         // post must be at least one character long
-      len: [1]
-    }
+        len: [1]
+      }
     }, 
     user_id: {
       type: DataTypes.INTEGER,

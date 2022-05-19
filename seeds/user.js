@@ -1,6 +1,9 @@
-const { User } = require('../models');
-
-const userData = [
+[
+  {
+    "username": "Aaron",
+    "email": "Aaron@Charactergroup.com.au",
+    "password": "Charactergroup01*"
+  },
   {
     "username": "Sal",
     "email": "sal@hotmail.com",
@@ -28,6 +31,3 @@ const userData = [
   }
 ];
 
-const seedUsers = () => User.bulkCreate(userData);
-
-module.exports = seedUsers;

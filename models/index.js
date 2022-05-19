@@ -1,41 +1,31 @@
-// add model ref
+
 const User = require('./User');
 const Post = require('./Post');
-const Comment = require('./Comment');
+const Comment = require('./Comment')
 
-// Create associations between the models
-// User-Post relationship
 User.hasMany(Post, {
+  foreignKey: 'user_id',
+  onDelete: 'CASCADE'
+});
+
+Post.belongsTo(User, {
   foreignKey: 'user_id'
 });
-//Post-User relationship
-Post.belongsTo(User, {
-  foreignKey: 'user_id',
-  onDelete: "cascade"
-});
 
-// Comment-User relationship
 Comment.belongsTo(User, {
-  foreignKey: 'user_id',
-  onDelete: 'cascade'
+  foreignKey: 'user_id'
 });
 
-// Comment-Post relationship
 Comment.belongsTo(Post, {
-  foreignKey: 'post_id',
-  onDelete: 'cascade'
+  foreignKey: 'post_id'
 });
 
-// User-Comment relationsihp
 User.hasMany(Comment, {
-  foreignKey: 'user_id',
-  onDelete: 'cascade',
+  foreignKey: 'user_id'
 });
 
-// Post-Comment relationship
 Post.hasMany(Comment, {
-  foreignKey: 'post_id',
-  onDelete: 'cascade',
-})
+  foreignKey: 'post_id'
+});
 
 module.exports = { User, Post, Comment };

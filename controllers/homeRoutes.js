@@ -1,61 +1,105 @@
 const router = require('express').Router();
-const { Post, Comment, User } = require('../models/');
-const withAuth = require('../utils/auth');
+const { User, Post, Comment } = require('../models');
+const auth = require('../utils/auth');
 
+// GET all posts for the homepage. (auth not required)
 router.get('/', async (req, res) => {
   try {
     const postData = await Post.findAll({
-      include: [User],
+      include: [
+        {
+          model: User,
+          attributes: ['username', 'id'],
+        },
+      ],
     });
     const posts = postData.map((post) => post.get({ plain: true }));
+    res.render('homepage', {
+      posts,
+      loggein_in: req.session.loggin_in
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
 
-    res.render('all-posts-admin', { posts, loggedIn: req.session.loggedIn});
+router.get('/post/:id', async (req, res) => {
+  try {
+    const postData = await Post.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          attributes: ['username', 'id'],
+        },
+        {
+          model: Comment, 
+          attributes: ['id', 'text', 'post_id', 'user_id', 'created_at'],
+          include: {
+            model: User,
+            attributes: ['username']
+          },
+        },
+      ],
+    });
+    const post = postData.get({ plain: true });
+    res.render('post', {
+      ...post,
+      logged_in: req.session.logged_in
+    });
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-// get single post
-router.get('/post/:id', withAuth, async (req, res) => {
+router.get('/user/:id', auth, async (req, res) => {
   try {
-    const postData = await Post.findOne({
-      where: {id: req.params.id},
+    const userData = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password'] },
       include: [
-        User,
         {
-          model: Comment,
-          include: [User],
+          model: Post,
+          attributes: ['id', 'title', 'content', 'date_created']
         },
       ],
     });
-
-    if (postData) {
-      const post = postData.get({ plain: true });
-
-      res.render('single-post', { post, loggedIn: req.session.loggedIn});
-    } else {
-      res.status(404).end();
-    }
+    const user = userData.get({ plain: true });
+    res.render('profile', {
+      ...user,
+      logged_in: true
+    });
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json(err)
+  }
+});
+
+router.get('/dashboard', auth, async (req, res) => {
+  try {
+    const userData = await User.findByPk(req.session.user_id, {
+      attributes: { exclude: ['password'] },
+      include: [
+        {
+           model: Post,
+          attributes: ['id', 'title', 'content']
+        },
+      ],
+    });
+    const user = userData.get({ plain: true });
+    res.render('dashboard', {
+      ...user,
+      logged_in: true
+    });
+  } catch (err) {
+    res.status(500).json(err)
   }
 });
 
 router.get('/login', (req, res) => {
-  if (req.session.loggedIn) {
+  if (req.session.logged_in) {
     res.redirect('/dashboard');
     return;
   }
   res.render('login');
 });
 
-router.get('/signup', (req, res) => {
-  if (req.session.loggedIn) {
-    res.redirect('/dashboard');
-    return;
-  }
-
-  res.render('signup');
-});
-
-module.exports = router;
+module.exports = router
